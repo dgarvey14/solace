@@ -35,3 +35,34 @@ export async function PUT(req: Request) {
     });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id } = body; // Extract id from the request body
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Missing advocate ID' }), {
+        status: 400,
+      });
+    }
+
+    const deleted = await db
+      .delete(advocates)
+      .where(eq(advocates.id, Number(id)))
+      .returning();
+
+    if (deleted.length === 0) {
+      return new Response(JSON.stringify({ error: 'Advocate not found' }), {
+        status: 404,
+      });
+    }
+
+    return new Response(JSON.stringify({ data: deleted }), { status: 200 });
+  } catch (err) {
+    console.error('DELETE route error:', err);
+    return new Response(JSON.stringify({ error: 'Delete failed' }), {
+      status: 500,
+    });
+  }
+}

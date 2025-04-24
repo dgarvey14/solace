@@ -21,6 +21,7 @@ export interface EditModalProps {
   setCurrentAdvocate: React.Dispatch<React.SetStateAction<Advocate | null>>;
   closeModal: () => void;
   handleSave: () => void;
+  handleDelete: () => void;
 }
 
 export interface SearchFilterProps {

@@ -53,23 +53,39 @@ export default function Home() {
   };
 
   const closeModal = () => {
-    console.log('close!!');
     setIsModalOpen(false);
     setCurrentAdvocate(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (currentAdvocate) {
+    // TODO IS Below best?
+    setCurrentAdvocate((prev) => {
+      if (!prev) return null;
       const { name, value } = e.target;
-      setCurrentAdvocate((prev) => ({
+      return {
         ...prev,
         [name]: value,
-      }));
-    }
+      };
+    });
   };
 
   const handleSave = async () => {
     if (!currentAdvocate) return;
+    const requiredFields = [
+      'firstName',
+      'lastName',
+      'city',
+      'degree',
+      'specialties',
+    ];
+
+    for (const field of requiredFields) {
+      if (!currentAdvocate[field as keyof Advocate]) {
+        alert(`${field} is required`);
+        return;
+      }
+    }
+
     try {
       const response = await fetch('/api/advocates', {
         method: 'PUT',
@@ -90,6 +106,35 @@ export default function Home() {
       }
     } catch (err) {
       console.error('PUT error', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!currentAdvocate) return;
+
+    // Confirm the deletion action
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this advocate?'
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch('/api/advocates', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: currentAdvocate.id }),
+      });
+
+      if (response.ok) {
+        setAdvocates((prev) => prev.filter((a) => a.id !== currentAdvocate.id));
+        closeModal();
+      } else {
+        console.error('Delete failed');
+      }
+    } catch (err) {
+      console.error('DELETE error', err);
     }
   };
 
@@ -126,6 +171,7 @@ export default function Home() {
             setCurrentAdvocate={setCurrentAdvocate}
             closeModal={closeModal}
             handleSave={handleSave}
+            handleDelete={handleDelete}
           />
         )}
       </div>
