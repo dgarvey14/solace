@@ -6,21 +6,34 @@ import TableHeaders from './components/TableHeaders';
 import EditModal from './components/EditModal';
 import SearchFilter from './components/SearchFilter';
 import { Advocate } from './types';
+import { saveAdvocate, deleteAdvocate } from './handlers';
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [currentAdvocate, setCurrentAdvocate] = useState<Advocate | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentAdvocate, setCurrentAdvocate] = useState<Advocate | null>(null);
 
   useEffect(() => {
-    console.log('fetching advocates...');
-    fetch('/api/advocates').then((response) => {
-      response.json().then((jsonResponse) => {
-        setAdvocates(jsonResponse.data);
+    setLoading(true);
+    fetch('/api/advocates')
+      .then((res) => res.json())
+      .then((json) => {
+        setAdvocates(json.data);
+        setLoading(false);
       });
-    });
   }, []);
+
+  const handleSave = () => {
+    // if (!currentAdvocate) return;
+    saveAdvocate(currentAdvocate, setAdvocates, closeModal);
+  };
+
+  const handleDelete = () => {
+    // if (!currentAdvocate) return;
+    deleteAdvocate(currentAdvocate, setAdvocates, closeModal);
+  };
 
   // Usememo to avoid redundant state and computation
   const filteredAdvocates = useMemo(() => {
@@ -69,75 +82,6 @@ export default function Home() {
     });
   };
 
-  const handleSave = async () => {
-    if (!currentAdvocate) return;
-    const requiredFields = [
-      'firstName',
-      'lastName',
-      'city',
-      'degree',
-      'specialties',
-    ];
-
-    for (const field of requiredFields) {
-      if (!currentAdvocate[field as keyof Advocate]) {
-        alert(`${field} is required`);
-        return;
-      }
-    }
-
-    try {
-      const response = await fetch('/api/advocates', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(currentAdvocate),
-      });
-
-      if (response.ok) {
-        const updated = await response.json();
-        setAdvocates((prev) =>
-          prev.map((a) => (a.id === currentAdvocate.id ? updated.data[0] : a))
-        );
-        closeModal();
-      } else {
-        console.error('Update failed');
-      }
-    } catch (err) {
-      console.error('PUT error', err);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!currentAdvocate) return;
-
-    // Confirm the deletion action
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this advocate?'
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch('/api/advocates', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: currentAdvocate.id }),
-      });
-
-      if (response.ok) {
-        setAdvocates((prev) => prev.filter((a) => a.id !== currentAdvocate.id));
-        closeModal();
-      } else {
-        console.error('Delete failed');
-      }
-    } catch (err) {
-      console.error('DELETE error', err);
-    }
-  };
-
   return (
     <main className="p-6 bg-gray-50 min-h-screen">
       <div className="container mx-auto bg-white rounded-lg shadow-md p-8">
@@ -150,18 +94,24 @@ export default function Home() {
           onClick={onClick}
         />
         <div className="overflow-x-auto">
-          <table className="w-full table-auto border-collapse border border-gray-200 text-sm">
-            <TableHeaders />
-            <tbody>
-              {filteredAdvocates.map((advocate) => (
-                <AdvocateRow
-                  key={advocate.id}
-                  advocate={advocate}
-                  openModal={openModal}
-                />
-              ))}
-            </tbody>
-          </table>
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-solaceGreen" />
+            </div>
+          ) : (
+            <table className="w-full table-auto border-collapse border border-gray-200 text-sm">
+              <TableHeaders />
+              <tbody>
+                {filteredAdvocates.map((advocate) => (
+                  <AdvocateRow
+                    key={advocate.id}
+                    advocate={advocate}
+                    openModal={openModal}
+                  />
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {isModalOpen && currentAdvocate && (

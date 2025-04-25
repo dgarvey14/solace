@@ -21,7 +21,8 @@ export async function PUT(req: Request) {
       });
     }
 
-    const updated = await db
+    // TODO: Type below?
+    const updated = await (db as any)
       .update(advocates)
       .set(updates)
       .where(eq(advocates.id, Number(id)))
@@ -47,7 +48,7 @@ export async function DELETE(req: Request) {
       });
     }
 
-    const deleted = await db
+    const deleted = await (db as any)
       .delete(advocates)
       .where(eq(advocates.id, Number(id)))
       .returning();
