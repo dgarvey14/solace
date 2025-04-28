@@ -19,14 +19,11 @@ function EditModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-opacity">
       <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-xl max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Sticky Header */}
         <div className="sticky top-0 bg-white z-10 p-4 border-b">
           <h2 className="text-xl font-semibold text-solaceGreen">
             Edit Advocate
           </h2>
         </div>
-
-        {/* Scrollable Form */}
         <div className="p-4 space-y-4 overflow-y-auto">
           {inputFields.map(({ label, name }) => (
             <label
@@ -87,8 +84,6 @@ function EditModal({
             </div>
           </label>
         </div>
-
-        {/* Sticky Footer */}
         <div className="sticky bottom-0 bg-white p-4 border-t flex justify-end gap-2 z-10">
           <button
             onClick={closeModal}
