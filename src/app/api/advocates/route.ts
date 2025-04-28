@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const body = await req.json();
-    const { id } = body; // Extract id from the request body
+    const { id } = body;
 
     if (!id) {
       return new Response(JSON.stringify({ error: 'Missing advocate ID' }), {
